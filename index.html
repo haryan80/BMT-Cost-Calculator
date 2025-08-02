@@ -1398,19 +1398,32 @@
             }
         }
 
-        async function login() {
-            try {
-                const loginRequest = {
-                    scopes: ["User.Read"]
-                };
-                
-                const response = await msalInstance.loginPopup(loginRequest);
-                await handleLoginSuccess(response.account);
-            } catch (error) {
-                console.error('Login error:', error);
-                alert('Login failed. Please try again.');
-            }
-        }
+async function login() {
+    try {
+        const loginRequest = {
+            scopes: ["User.Read"]
+        };
+        
+        const response = await msalInstance.loginPopup(loginRequest);
+
+        // 👉 Set authenticated user in Application Insights
+        appInsights.setAuthenticatedUserContext(response.account.username);
+
+        // (Optional) Track login event
+        appInsights.trackEvent({ name: "UserLoggedIn" });
+
+        // (Optional) Track page view after login
+        appInsights.trackPageView({ name: "Homepage (Authenticated)" });
+
+        // Continue login handling
+        await handleLoginSuccess(response.account);
+
+    } catch (error) {
+        console.error('Login error:', error);
+        alert('Login failed. Please try again.');
+    }
+}
+
 
         async function logout() {
             try {
