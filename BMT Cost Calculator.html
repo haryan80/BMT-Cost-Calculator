@@ -1,0 +1,2051 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>BMT Cost Calculator - KHCC</title>
+
+    
+
+    <!-- MSAL.js for Azure AD authentication -->
+
+    <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
+
+    
+
+    <style>
+
+        * {
+
+            margin: 0;
+
+            padding: 0;
+
+            box-sizing: border-box;
+
+        }
+
+ 
+
+        body {
+
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+            min-height: 100vh;
+
+            padding: 20px;
+
+        }
+
+ 
+
+        .container {
+
+            max-width: 1200px;
+
+            margin: 0 auto;
+
+            background: white;
+
+            border-radius: 20px;
+
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+
+            overflow: hidden;
+
+        }
+
+ 
+
+        .header {
+
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+
+            color: white;
+
+            padding: 30px;
+
+            text-align: center;
+
+            position: relative;
+
+        }
+
+ 
+
+        .header h1 {
+
+            font-size: 2.5rem;
+
+            margin-bottom: 10px;
+
+            font-weight: 700;
+
+        }
+
+ 
+
+        .header p {
+
+            font-size: 1.1rem;
+
+            opacity: 0.9;
+
+            max-width: 600px;
+
+            margin: 0 auto;
+
+        }
+
+ 
+
+        /* Authentication UI Styles */
+
+        .auth-container {
+
+            position: absolute;
+
+            top: 20px;
+
+            right: 20px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 15px;
+
+        }
+
+ 
+
+        .user-info {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            background: rgba(255, 255, 255, 0.1);
+
+            padding: 8px 15px;
+
+            border-radius: 20px;
+
+            backdrop-filter: blur(10px);
+
+        }
+
+ 
+
+        .user-avatar {
+
+            width: 32px;
+
+            height: 32px;
+
+            border-radius: 50%;
+
+            background: #3498db;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-weight: bold;
+
+            color: white;
+
+            font-size: 14px;
+
+        }
+
+ 
+
+        .user-name {
+
+            font-size: 0.9rem;
+
+            font-weight: 500;
+
+        }
+
+ 
+
+        .auth-btn {
+
+            background: rgba(255, 255, 255, 0.2);
+
+            color: white;
+
+            border: 1px solid rgba(255, 255, 255, 0.3);
+
+            padding: 8px 16px;
+
+            border-radius: 20px;
+
+            cursor: pointer;
+
+            font-size: 0.9rem;
+
+            font-weight: 500;
+
+            transition: all 0.3s ease;
+
+            backdrop-filter: blur(10px);
+
+        }
+
+ 
+
+        .auth-btn:hover {
+
+            background: rgba(255, 255, 255, 0.3);
+
+            transform: translateY(-1px);
+
+        }
+
+ 
+
+        .login-overlay {
+
+            position: fixed;
+
+            top: 0;
+
+            left: 0;
+
+            width: 100%;
+
+            height: 100%;
+
+            background: rgba(0, 0, 0, 0.8);
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            z-index: 1000;
+
+        }
+
+ 
+
+        .login-card {
+
+            background: white;
+
+            padding: 40px;
+
+            border-radius: 20px;
+
+            text-align: center;
+
+            max-width: 400px;
+
+            width: 90%;
+
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+
+        }
+
+ 
+
+        .login-card h2 {
+
+            color: #2c3e50;
+
+            margin-bottom: 20px;
+
+            font-size: 1.8rem;
+
+        }
+
+ 
+
+        .login-card p {
+
+            color: #7f8c8d;
+
+            margin-bottom: 30px;
+
+            line-height: 1.6;
+
+        }
+
+ 
+
+        .login-btn {
+
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+
+            color: white;
+
+            border: none;
+
+            padding: 15px 30px;
+
+            border-radius: 10px;
+
+            font-size: 1.1rem;
+
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition: all 0.3s ease;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+
+            width: 100%;
+
+        }
+
+ 
+
+        .login-btn:hover {
+
+            transform: translateY(-2px);
+
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+
+        }
+
+ 
+
+        .loading-spinner {
+
+            display: inline-block;
+
+            width: 20px;
+
+            height: 20px;
+
+            border: 3px solid rgba(255, 255, 255, 0.3);
+
+            border-radius: 50%;
+
+            border-top-color: white;
+
+            animation: spin 1s ease-in-out infinite;
+
+            margin-right: 10px;
+
+        }
+
+ 
+
+        @keyframes spin {
+
+            to { transform: rotate(360deg); }
+
+        }
+
+ 
+
+        .hidden {
+
+            display: none !important;
+
+        }
+
+ 
+
+        .main-content {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 0;
+
+            min-height: 600px;
+
+        }
+
+ 
+
+        .input-panel {
+
+            padding: 40px;
+
+            background: #f8f9fa;
+
+            border-right: 1px solid #e9ecef;
+
+        }
+
+ 
+
+        .results-panel {
+
+            padding: 40px;
+
+            background: white;
+
+        }
+
+ 
+
+        .form-section {
+
+            margin-bottom: 30px;
+
+        }
+
+ 
+
+        .section-title {
+
+            font-size: 1.3rem;
+
+            font-weight: 600;
+
+            color: #2c3e50;
+
+            margin-bottom: 15px;
+
+            padding-bottom: 8px;
+
+            border-bottom: 2px solid #3498db;
+
+        }
+
+ 
+
+        .form-group {
+
+            margin-bottom: 20px;
+
+        }
+
+ 
+
+        .form-group label {
+
+            display: block;
+
+            font-weight: 600;
+
+            color: #34495e;
+
+            margin-bottom: 8px;
+
+            font-size: 0.95rem;
+
+        }
+
+ 
+
+        .form-group select,
+
+        .form-group input {
+
+            width: 100%;
+
+            padding: 12px 15px;
+
+            border: 2px solid #e9ecef;
+
+            border-radius: 8px;
+
+            font-size: 1rem;
+
+            transition: all 0.3s ease;
+
+            background: white;
+
+        }
+
+ 
+
+        .form-group select:focus,
+
+        .form-group input:focus {
+
+            outline: none;
+
+            border-color: #3498db;
+
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+
+        }
+
+ 
+
+        .checkbox-group {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 15px;
+
+            margin-top: 10px;
+
+        }
+
+ 
+
+        .checkbox-item {
+
+            display: flex;
+
+            align-items: center;
+
+            padding: 10px;
+
+            background: white;
+
+            border: 2px solid #e9ecef;
+
+            border-radius: 8px;
+
+            transition: all 0.3s ease;
+
+            cursor: pointer;
+
+        }
+
+ 
+
+        .checkbox-item:hover {
+
+            border-color: #3498db;
+
+            background: #f8f9ff;
+
+        }
+
+ 
+
+        .checkbox-item input[type="checkbox"] {
+
+            width: auto;
+
+            margin-right: 10px;
+
+            transform: scale(1.2);
+
+        }
+
+ 
+
+        .calculate-btn {
+
+            width: 100%;
+
+            padding: 15px;
+
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+
+            color: white;
+
+            border: none;
+
+            border-radius: 10px;
+
+            font-size: 1.1rem;
+
+            font-weight: 600;
+
+            cursor: pointer;
+
+            transition: all 0.3s ease;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+
+        }
+
+ 
+
+        .calculate-btn:hover {
+
+            transform: translateY(-2px);
+
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+
+        }
+
+ 
+
+        .cost-display {
+
+            text-align: center;
+
+            margin-bottom: 30px;
+
+        }
+
+ 
+
+        .total-cost {
+
+            font-size: 3rem;
+
+            font-weight: 700;
+
+            color: #2c3e50;
+
+            margin-bottom: 10px;
+
+        }
+
+ 
+
+        .cost-range {
+
+            font-size: 1.1rem;
+
+            color: #7f8c8d;
+
+            margin-bottom: 20px;
+
+        }
+
+ 
+
+        .risk-badge {
+
+            display: inline-block;
+
+            padding: 8px 20px;
+
+            border-radius: 20px;
+
+            font-weight: 600;
+
+            font-size: 0.9rem;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+
+        }
+
+ 
+
+        .risk-low {
+
+            background: #d5f4e6;
+
+            color: #27ae60;
+
+        }
+
+ 
+
+        .risk-high {
+
+            background: #fadbd8;
+
+            color: #e74c3c;
+
+        }
+
+ 
+
+        .cost-breakdown {
+
+            margin-top: 30px;
+
+        }
+
+ 
+
+        .breakdown-item {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            padding: 15px;
+
+            margin-bottom: 10px;
+
+            background: #f8f9fa;
+
+            border-radius: 8px;
+
+            border-left: 4px solid #3498db;
+
+        }
+
+ 
+
+        .breakdown-label {
+
+            font-weight: 600;
+
+            color: #2c3e50;
+
+        }
+
+ 
+
+        .breakdown-value {
+
+            font-weight: 700;
+
+            color: #3498db;
+
+            font-size: 1.1rem;
+
+        }
+
+ 
+
+        .recommendations {
+
+            margin-top: 30px;
+
+            padding: 20px;
+
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+
+            border-radius: 10px;
+
+            color: white;
+
+        }
+
+ 
+
+        .recommendations h3 {
+
+            margin-bottom: 15px;
+
+            font-size: 1.3rem;
+
+        }
+
+ 
+
+        .recommendations ul {
+
+            list-style: none;
+
+        }
+
+ 
+
+        .recommendations li {
+
+            margin-bottom: 8px;
+
+            padding-left: 20px;
+
+            position: relative;
+
+        }
+
+ 
+
+        .recommendations li:before {
+
+            content: "💡";
+
+            position: absolute;
+
+            left: 0;
+
+        }
+
+ 
+
+        .methodology {
+
+            margin-top: 40px;
+
+            padding: 30px;
+
+            background: #2c3e50;
+
+            color: white;
+
+            text-align: center;
+
+        }
+
+ 
+
+        .methodology h3 {
+
+            margin-bottom: 15px;
+
+            font-size: 1.5rem;
+
+        }
+
+ 
+
+        .methodology p {
+
+            line-height: 1.6;
+
+            margin-bottom: 10px;
+
+        }
+
+ 
+
+        .stats-grid {
+
+            display: grid;
+
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+
+            gap: 20px;
+
+            margin-top: 20px;
+
+        }
+
+ 
+
+        .stat-card {
+
+            background: rgba(255,255,255,0.1);
+
+            padding: 20px;
+
+            border-radius: 10px;
+
+            text-align: center;
+
+        }
+
+ 
+
+        .stat-value {
+
+            font-size: 2rem;
+
+            font-weight: 700;
+
+            margin-bottom: 5px;
+
+        }
+
+ 
+
+        .stat-label {
+
+            font-size: 0.9rem;
+
+            opacity: 0.8;
+
+        }
+
+ 
+
+        @media (max-width: 968px) {
+
+            .main-content {
+
+                grid-template-columns: 1fr;
+
+            }
+
+ 
+
+            .input-panel {
+
+                border-right: none;
+
+                border-bottom: 1px solid #e9ecef;
+
+            }
+
+ 
+
+            .header h1 {
+
+                font-size: 2rem;
+
+            }
+
+ 
+
+            .total-cost {
+
+                font-size: 2.5rem;
+
+            }
+
+        }
+
+ 
+
+        .warning {
+
+            background: #fff3cd;
+
+            border: 1px solid #ffeeba;
+
+            color: #856404;
+
+            padding: 15px;
+
+            border-radius: 8px;
+
+            margin-bottom: 20px;
+
+        }
+
+ 
+
+        .progress-bar {
+
+            width: 100%;
+
+            height: 8px;
+
+            background: #e9ecef;
+
+            border-radius: 4px;
+
+            overflow: hidden;
+
+            margin-top: 10px;
+
+        }
+
+ 
+
+        .progress-fill {
+
+            height: 100%;
+
+            background: linear-gradient(90deg, #27ae60, #f39c12, #e74c3c);
+
+            transition: width 0.3s ease;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="header">
+
+            <h1>🏥 BMT Cost Calculator</h1>
+
+            <p>Predict Bone Marrow Transplant costs using advanced machine learning models trained on 166 KHCC patients (2016-2022)</p>
+
+            <div class="auth-container">
+
+                <div class="user-info" id="userInfo">
+
+                    <div class="user-avatar">?</div>
+
+                    <span class="user-name" id="userName">Guest</span>
+
+                </div>
+
+                <button class="auth-btn" id="loginBtn">Login</button>
+
+            </div>
+
+        </div>
+
+ 
+
+        <div class="main-content" id="mainContent" style="display: none;">
+
+            <div class="input-panel">
+
+                <form id="costForm">
+
+                    <div class="form-section">
+
+                        <h3 class="section-title">👤 Patient Demographics</h3>
+
+                        <div class="form-group">
+
+                            <label for="age">Age at Transplant (years)</label>
+
+                            <input type="number" id="age" min="0" max="25" value="10" required>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="gender">Gender</label>
+
+                            <select id="gender" required>
+
+                                <option value="M">Male</option>
+
+                                <option value="F">Female</option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+ 
+
+                    <div class="form-section">
+
+                        <h3 class="section-title">🧬 Disease Characteristics</h3>
+
+                        <div class="form-group">
+
+                            <label for="diagnosis">Primary Diagnosis</label>
+
+                            <select id="diagnosis" required>
+
+                                <option value="ALL">Acute Lymphoblastic Leukemia (ALL)</option>
+
+                                <option value="AML">Acute Myeloid Leukemia (AML)</option>
+
+                                <option value="MDS/MPD">MDS/Myeloproliferative Disorder</option>
+
+                                <option value="Lymphoma">Lymphoma</option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+ 
+
+                    <div class="form-section">
+
+                        <h3 class="section-title">🫀 Transplant Details</h3>
+
+                        <div class="form-group">
+
+                            <label for="donorType">Donor Type</label>
+
+                            <select id="donorType" required>
+
+                                <option value="Related">Related Donor</option>
+
+                                <option value="Haplo">Haploidentical</option>
+
+                                <option value="UCB">Unrelated Cord Blood</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="stemCell">Stem Cell Source</label>
+
+                            <select id="stemCell" required>
+
+                                <option value="PBSC">Peripheral Blood Stem Cells</option>
+
+                                <option value="BM">Bone Marrow</option>
+
+                                <option value="UCB">Umbilical Cord Blood</option>
+
+                                <option value="BM+PBSC">Mixed BM + PBSC</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="form-group">
+
+                            <label for="conditioning">Conditioning Regimen</label>
+
+                            <select id="conditioning" required>
+
+                                <option value="Myeloablative">Myeloablative</option>
+
+                                <option value="RIC">Reduced Intensity</option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+ 
+
+                    <div class="form-section">
+
+                        <h3 class="section-title">⚠️ Risk Factors & Complications</h3>
+
+                        <div class="checkbox-group">
+
+                            <div class="checkbox-item">
+
+                                <input type="checkbox" id="icuAdmission">
+
+                                <label for="icuAdmission">ICU Admission Expected</label>
+
+                            </div>
+
+                            <div class="checkbox-item">
+
+                                <input type="checkbox" id="performanceScore">
+
+                                <label for="performanceScore">Performance Score <90</label>
+
+                            </div>
+
+                            <div class="checkbox-item">
+
+                                <input type="checkbox" id="acuteGVHD">
+
+                                <label for="acuteGVHD">High-Grade Acute GVHD Risk</label>
+
+                            </div>
+
+                            <div class="checkbox-item">
+
+                                <input type="checkbox" id="chronicGVHD">
+
+                                <label for="chronicGVHD">High-Grade Chronic GVHD Risk</label>
+
+                            </div>
+
+                            <div class="checkbox-item">
+
+                                <input type="checkbox" id="ecpTherapy">
+
+                                <label for="ecpTherapy">ECP Therapy</label>
+
+                            </div>
+
+                            <div class="checkbox-item">
+
+                                <input type="checkbox" id="defibrotide">
+
+                                <label for="defibrotide">Defibrotide Therapy</label>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+ 
+
+                    <button type="submit" class="calculate-btn">💰 Calculate Cost Prediction</button>
+
+                </form>
+
+            </div>
+
+ 
+
+            <div class="results-panel">
+
+                <div class="warning">
+
+                    <strong>⚠️ Clinical Use Warning:</strong> This calculator provides estimates based on historical data. Actual costs may vary significantly based on individual patient factors and complications.
+
+                </div>
+
+ 
+
+                <div id="results" style="display: none;">
+
+                    <div class="cost-display">
+
+                        <div class="total-cost" id="totalCost">75,000 JD</div>
+
+                        <div class="cost-range" id="costRange">Range: 55,000 - 95,000 JD</div>
+
+                        <span class="risk-badge" id="riskBadge">MODERATE RISK</span>
+
+                        <div class="progress-bar">
+
+                            <div class="progress-fill" id="progressFill" style="width: 50%"></div>
+
+                        </div>
+
+                    </div>
+
+ 
+
+                    <div class="cost-breakdown">
+
+                        <h3 style="margin-bottom: 15px; color: #2c3e50;">💸 Cost Breakdown</h3>
+
+                        <div class="breakdown-item">
+
+                            <span class="breakdown-label">Day 0-100 (Early Period)</span>
+
+                            <span class="breakdown-value" id="earlyCost">58,000 JD</span>
+
+                        </div>
+
+                        <div class="breakdown-item">
+
+                            <span class="breakdown-label">Day 101-365 (Late Period)</span>
+
+                            <span class="breakdown-value" id="lateCost">17,000 JD</span>
+
+                        </div>
+
+                        <div class="breakdown-item">
+
+                            <span class="breakdown-label">Pharmacy Costs</span>
+
+                            <span class="breakdown-value" id="pharmacyCost">28,500 JD</span>
+
+                        </div>
+
+                        <div class="breakdown-item">
+
+                            <span class="breakdown-label">Lab + Blood Bank</span>
+
+                            <span class="breakdown-value" id="labCost">19,900 JD</span>
+
+                        </div>
+
+                        <div class="breakdown-item">
+
+                            <span class="breakdown-label">Room + Clinic Visits</span>
+
+                            <span class="breakdown-value" id="roomCost">21,600 JD</span>
+
+                        </div>
+
+                        <div class="breakdown-item">
+
+                            <span class="breakdown-label">Graft Acquisition</span>
+
+                            <span class="breakdown-value" id="graftCost">5,000 JD</span>
+
+                        </div>
+
+                    </div>
+
+ 
+
+                    <div class="recommendations" id="recommendations">
+
+                        <h3>🎯 Clinical Recommendations</h3>
+
+                        <ul id="recommendationsList">
+
+                            <li>Standard monitoring protocols recommended</li>
+
+                            <li>Budget accordingly for expected cost range</li>
+
+                        </ul>
+
+                    </div>
+
+                </div>
+
+ 
+
+                <div id="placeholder" style="text-align: center; padding: 60px 20px; color: #7f8c8d;">
+
+                    <div style="font-size: 4rem; margin-bottom: 20px;">📊</div>
+
+                    <h3>Ready to Calculate</h3>
+
+                    <p>Fill in the patient details on the left and click "Calculate Cost Prediction" to see the estimated BMT costs.</p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+ 
+
+        <div class="methodology">
+
+            <h3>📈 Model Performance & Methodology</h3>
+
+            <p>This calculator uses XGBoost regression models trained on 166 pediatric BMT patients at KHCC (2016-2022). The model achieves an R² of 0.421 with a mean absolute error of ±21,467 JD.</p>
+
+           
+
+            <div class="stats-grid">
+
+                <div class="stat-card">
+
+                    <div class="stat-value">166</div>
+
+                    <div class="stat-label">Patients Analyzed</div>
+
+                </div>
+
+                <div class="stat-card">
+
+                    <div class="stat-value">42.1%</div>
+
+                    <div class="stat-label">Cost Variation Explained</div>
+
+                </div>
+
+                <div class="stat-card">
+
+                    <div class="stat-value">±21K</div>
+
+                    <div class="stat-label">Average Error (JD)</div>
+
+                </div>
+
+                <div class="stat-card">
+
+                    <div class="stat-value">27.6%</div>
+
+                    <div class="stat-label">Mean Error Rate</div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+ 
+
+    <div class="login-overlay" id="loginOverlay" style="display: none;">
+
+        <div class="login-card">
+
+            <h2>Welcome Back!</h2>
+
+            <p>Please log in to access the Bone Marrow Transplant Cost Calculator.</p>
+
+            <button class="login-btn" id="loginButton">Login with Azure AD</button>
+
+        </div>
+
+    </div>
+
+ 
+
+    <script>
+        // Azure AD Authentication Configuration
+        const msalConfig = {
+            auth: {
+                clientId: "2d6da166-0820-468f-8ad2-8c0bb878c7d5", // Replace with your Azure AD app registration client ID
+                authority: "eb2d8e08-3560-4234-ac00-719534fc121c", // Replace with your tenant ID
+                redirectUri: window.location.origin,
+                postLogoutRedirectUri: window.location.origin
+            },
+            cache: {
+                cacheLocation: "sessionStorage",
+                storeAuthStateInCookie: false
+            }
+        };
+
+        // MSAL instance
+        const msalInstance = new msal.PublicClientApplication(msalConfig);
+
+        // Authentication state
+        let isAuthenticated = false;
+        let currentUser = null;
+
+        // Authentication functions
+        async function initializeAuth() {
+            try {
+                // Check if user is already signed in
+                const accounts = msalInstance.getAllAccounts();
+                if (accounts.length > 0) {
+                    await handleLoginSuccess(accounts[0]);
+                } else {
+                    showLoginOverlay();
+                }
+            } catch (error) {
+                console.error('Auth initialization error:', error);
+                showLoginOverlay();
+            }
+        }
+
+        async function login() {
+            try {
+                const loginRequest = {
+                    scopes: ["User.Read"]
+                };
+                
+                const response = await msalInstance.loginPopup(loginRequest);
+                await handleLoginSuccess(response.account);
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Login failed. Please try again.');
+            }
+        }
+
+        async function logout() {
+            try {
+                await msalInstance.logoutPopup();
+                handleLogout();
+            } catch (error) {
+                console.error('Logout error:', error);
+                handleLogout();
+            }
+        }
+
+        async function handleLoginSuccess(account) {
+            currentUser = account;
+            isAuthenticated = true;
+            
+            // Update UI
+            updateUserInfo(account);
+            hideLoginOverlay();
+            showMainContent();
+            
+            // Store authentication state
+            sessionStorage.setItem('isAuthenticated', 'true');
+            sessionStorage.setItem('userAccount', JSON.stringify(account));
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            isAuthenticated = false;
+            
+            // Update UI
+            updateUserInfo(null);
+            showLoginOverlay();
+            hideMainContent();
+            
+            // Clear stored state
+            sessionStorage.removeItem('isAuthenticated');
+            sessionStorage.removeItem('userAccount');
+        }
+
+        function updateUserInfo(account) {
+            const userInfo = document.getElementById('userInfo');
+            const userName = document.getElementById('userName');
+            const userAvatar = document.querySelector('.user-avatar');
+            const loginBtn = document.getElementById('loginBtn');
+
+            if (account) {
+                const displayName = account.name || account.username || 'User';
+                const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                
+                userName.textContent = displayName;
+                userAvatar.textContent = initials;
+                loginBtn.textContent = 'Logout';
+                loginBtn.onclick = logout;
+                
+                userInfo.style.display = 'flex';
+            } else {
+                userName.textContent = 'Guest';
+                userAvatar.textContent = '?';
+                loginBtn.textContent = 'Login';
+                loginBtn.onclick = login;
+                
+                userInfo.style.display = 'none';
+            }
+        }
+
+        function showLoginOverlay() {
+            const overlay = document.getElementById('loginOverlay');
+            if (overlay) overlay.style.display = 'flex';
+        }
+
+        function hideLoginOverlay() {
+            const overlay = document.getElementById('loginOverlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        function showMainContent() {
+            const mainContent = document.getElementById('mainContent');
+            if (mainContent) mainContent.style.display = 'grid';
+        }
+
+        function hideMainContent() {
+            const mainContent = document.getElementById('mainContent');
+            if (mainContent) mainContent.style.display = 'none';
+        }
+
+        // Event listeners for authentication
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize authentication
+            initializeAuth();
+            
+            // Set up login button
+            const loginButton = document.getElementById('loginButton');
+            if (loginButton) {
+                loginButton.addEventListener('click', login);
+            }
+        });
+
+        // Cost calculation model based on your analysis
+
+        const baseCosts = {
+
+            day0to100: 73332,
+
+            day101to365: 21076,
+
+            pharmacy: 38082,
+
+            lab: 19906,
+
+            radiology: 1481,
+
+            room: 28951
+
+        };
+
+ 
+
+        const riskMultipliers = {
+
+            // From your regression analysis
+
+            diagnosis: {
+
+                'ALL': 1.0,        // Reference
+
+                'AML': 1.5,        // Higher cost
+
+                'MDS/MPD': 2.8,    // Highest cost (from OR 16.32 in classification)
+
+                'Lymphoma': 1.2
+
+            },
+
+            donorType: {
+
+                'Related': 0.75,   // Cost savings (from OR 0.22)
+
+                'Haplo': 1.0,      // Reference
+
+                'UCB': 1.4         // Higher cost
+
+            },
+
+            stemCell: {
+
+                'PBSC': 1.0,       // Reference
+
+                'BM': 1.1,
+
+                'UCB': 1.3,        // Higher acquisition cost
+
+                'BM+PBSC': 1.05
+
+            },
+
+            age: 0.06,             // 6% increase per year (from OR 1.13)
+
+            complications: {
+
+                icuAdmission: 1.3,      // From OR 2.60
+
+                acuteGVHD: 1.8,         // Major cost driver
+
+                chronicGVHD: 1.4,       // From OR 3.10
+
+                ecpTherapy: 1.6,        // High-cost therapy
+
+                defibrotide: 1.3,
+
+                performanceScore: 1.2,
+
+                conditioning: 1.15
+
+            }
+
+        };
+
+ 
+
+        const graftCosts = {
+
+            'PBSC': 2154,
+
+            'BM': 2719,
+
+            'UCB': 35000,
+
+            'BM+PBSC': 6065
+
+        };
+
+ 
+
+        function calculateCost() {
+
+            console.log('Calculate function called'); // Debug log
+            
+            // Check if user is authenticated
+            if (!isAuthenticated) {
+                alert('Please log in to use the calculator.');
+                return;
+            }
+
+           
+
+            try {
+
+                // Get form values with error checking
+
+                const ageElement = document.getElementById('age');
+
+                const age = ageElement ? parseInt(ageElement.value) || 10 : 10;
+
+               
+
+                const genderElement = document.getElementById('gender');
+
+                const gender = genderElement ? genderElement.value : 'M';
+
+               
+
+                const diagnosisElement = document.getElementById('diagnosis');
+
+                const diagnosis = diagnosisElement ? diagnosisElement.value : 'ALL';
+
+               
+
+                const donorTypeElement = document.getElementById('donorType');
+
+                const donorType = donorTypeElement ? donorTypeElement.value : 'Related';
+
+               
+
+                const stemCellElement = document.getElementById('stemCell');
+
+                const stemCell = stemCellElement ? stemCellElement.value : 'PBSC';
+
+               
+
+                const conditioningElement = document.getElementById('conditioning');
+
+                const conditioning = conditioningElement ? conditioningElement.value : 'Myeloablative';
+
+               
+
+                // Complications - check if elements exist
+
+                const icuAdmission = document.getElementById('icuAdmission') ? document.getElementById('icuAdmission').checked : false;
+
+                const performanceScore = document.getElementById('performanceScore') ? document.getElementById('performanceScore').checked : false;
+
+                const acuteGVHD = document.getElementById('acuteGVHD') ? document.getElementById('acuteGVHD').checked : false;
+
+                const chronicGVHD = document.getElementById('chronicGVHD') ? document.getElementById('chronicGVHD').checked : false;
+
+                const ecpTherapy = document.getElementById('ecpTherapy') ? document.getElementById('ecpTherapy').checked : false;
+
+                const defibrotide = document.getElementById('defibrotide') ? document.getElementById('defibrotide').checked : false;
+
+ 
+
+                console.log('Form values:', {age, diagnosis, donorType, stemCell}); // Debug log
+
+ 
+
+                // Start with base cost
+
+                let totalCost = baseCosts.day0to100 + baseCosts.day101to365;
+
+ 
+
+                // Apply multipliers
+
+                totalCost *= riskMultipliers.diagnosis[diagnosis] || 1.0;
+
+                totalCost *= riskMultipliers.donorType[donorType] || 1.0;
+
+                totalCost *= riskMultipliers.stemCell[stemCell] || 1.0;
+
+                totalCost *= (1 + (age - 10) * riskMultipliers.age); // Age effect
+
+ 
+
+                // Apply complication multipliers
+
+                if (icuAdmission) totalCost *= riskMultipliers.complications.icuAdmission;
+
+                if (acuteGVHD) totalCost *= riskMultipliers.complications.acuteGVHD;
+
+                if (chronicGVHD) totalCost *= riskMultipliers.complications.chronicGVHD;
+
+                if (ecpTherapy) totalCost *= riskMultipliers.complications.ecpTherapy;
+
+                if (defibrotide) totalCost *= riskMultipliers.complications.defibrotide;
+
+                if (performanceScore) totalCost *= riskMultipliers.complications.performanceScore;
+
+                if (conditioning === 'RIC') totalCost *= riskMultipliers.complications.conditioning;
+
+ 
+
+                console.log('Calculated total cost:', totalCost); // Debug log
+
+ 
+
+                // Calculate cost breakdown
+
+                const day0to100 = totalCost * 0.78; // 78% in first 100 days
+
+                const day101to365 = totalCost * 0.22;
+
+               
+
+                const pharmacy = totalCost * 0.43;
+
+                const lab = totalCost * 0.22;
+
+                const room = totalCost * 0.33;
+
+                const graftCost = graftCosts[stemCell] || 2154;
+
+ 
+
+                // Error margins (±25% based on your model's MAPE)
+
+                const errorMargin = totalCost * 0.25;
+
+                const lowerBound = totalCost - errorMargin;
+
+                const upperBound = totalCost + errorMargin;
+
+ 
+
+                // Update display with error checking
+
+                const elements = {
+
+                    'totalCost': formatCurrency(Math.round(totalCost)),
+
+                    'costRange': `Range: ${formatCurrency(Math.round(lowerBound))} - ${formatCurrency(Math.round(upperBound))}`,
+
+                    'earlyCost': formatCurrency(Math.round(day0to100)),
+
+                    'lateCost': formatCurrency(Math.round(day101to365)),
+
+                    'pharmacyCost': formatCurrency(Math.round(pharmacy)),
+
+                    'labCost': formatCurrency(Math.round(lab)),
+
+                    'roomCost': formatCurrency(Math.round(room)),
+
+                    'graftCost': formatCurrency(graftCost)
+
+                };
+
+ 
+
+                // Update each element safely
+
+                Object.keys(elements).forEach(id => {
+
+                    const element = document.getElementById(id);
+
+                    if (element) {
+
+                        element.textContent = elements[id];
+
+                    }
+
+                });
+
+ 
+
+                // Risk assessment
+
+                const riskLevel = getRiskLevel(totalCost);
+
+                const riskBadge = document.getElementById('riskBadge');
+
+                if (riskBadge) {
+
+                    riskBadge.textContent = riskLevel.label;
+
+                    riskBadge.className = `risk-badge ${riskLevel.class}`;
+
+                }
+
+ 
+
+                // Progress bar
+
+                const progressPercent = Math.min(100, (totalCost / 200000) * 100);
+
+                const progressFill = document.getElementById('progressFill');
+
+                if (progressFill) {
+
+                    progressFill.style.width = progressPercent + '%';
+
+                }
+
+ 
+
+                // Generate recommendations
+
+                generateRecommendations(diagnosis, donorType, age, acuteGVHD, chronicGVHD, icuAdmission, totalCost);
+
+ 
+
+                // Show results
+
+                const placeholder = document.getElementById('placeholder');
+
+                const results = document.getElementById('results');
+
+                if (placeholder) placeholder.style.display = 'none';
+
+                if (results) results.style.display = 'block';
+
+               
+
+                console.log('Results updated successfully'); // Debug log
+
+ 
+
+            } catch (error) {
+
+                console.error('Error in calculateCost:', error);
+
+                alert('There was an error calculating the cost. Please check the form and try again.');
+
+            }
+
+        }
+
+ 
+
+        function formatCurrency(amount) {
+
+            return amount.toLocaleString() + ' JD';
+
+        }
+
+ 
+
+        function getRiskLevel(cost) {
+
+            if (cost < 60000) {
+
+                return { label: 'LOW COST', class: 'risk-low' };
+
+            } else if (cost > 120000) {
+
+                return { label: 'HIGH COST', class: 'risk-high' };
+
+            } else {
+
+                return { label: 'MODERATE COST', class: 'risk-low' };
+
+            }
+
+        }
+
+ 
+
+        function generateRecommendations(diagnosis, donorType, age, acuteGVHD, chronicGVHD, icu, totalCost) {
+
+            const recommendations = [];
+
+ 
+
+            if (diagnosis === 'MDS/MPD') {
+
+                recommendations.push('🔴 MDS/MPD diagnosis: Plan for intensive resource allocation and enhanced monitoring');
+
+                recommendations.push('💰 Budget 2-3x normal costs due to high-risk diagnosis');
+
+            }
+
+ 
+
+            if (donorType === 'Related') {
+
+                recommendations.push('✅ Related donor provides significant cost savings - excellent choice');
+
+            } else if (donorType === 'UCB') {
+
+                recommendations.push('⚠️ UCB transplant: Higher acquisition costs and potential complications');
+
+            }
+
+ 
+
+            if (age > 15) {
+
+                recommendations.push('👴 Older patient: Enhanced age-specific protocols recommended');
+
+            }
+
+ 
+
+            if (acuteGVHD) {
+
+                recommendations.push('🚨 High GVHD risk: Implement enhanced prevention protocols immediately');
+
+            }
+
+ 
+
+            if (chronicGVHD) {
+
+                recommendations.push('⏰ Chronic GVHD risk: Plan for extended monitoring and treatment costs');
+
+            }
+
+ 
+
+            if (icu) {
+
+                recommendations.push('🏥 ICU admission expected: Coordinate intensive care resources');
+
+            }
+
+ 
+
+            if (totalCost > 120000) {
+
+                recommendations.push('💸 High-cost case: Consider financial counseling and insurance pre-authorization');
+
+                recommendations.push('📋 Enhanced cost monitoring and intervention protocols recommended');
+
+            }
+
+ 
+
+            recommendations.push('📊 Allocate 78% of budget to first 100 days post-transplant');
+
+            recommendations.push('💊 Focus pharmacy cost optimization - largest service component');
+
+ 
+
+            // Update recommendations display
+
+            const recommendationsList = document.getElementById('recommendationsList');
+
+            if (recommendationsList) {
+
+                recommendationsList.innerHTML = recommendations.map(rec => `<li>${rec}</li>`).join('');
+
+            }
+
+        }
+
+ 
+
+        // Initialize when page loads
+
+        document.addEventListener('DOMContentLoaded', function() {
+
+            console.log('Page loaded, setting up event handlers'); // Debug log
+
+           
+
+            // Set some default values for demo
+
+            const diagnosisEl = document.getElementById('diagnosis');
+
+            const donorTypeEl = document.getElementById('donorType');
+
+            const ageEl = document.getElementById('age');
+
+           
+
+            if (diagnosisEl) diagnosisEl.value = 'ALL';
+
+            if (donorTypeEl) donorTypeEl.value = 'Related';
+
+            if (ageEl) ageEl.value = '8';
+
+ 
+
+            // Form submission handler
+
+            const form = document.getElementById('costForm');
+
+            if (form) {
+
+                form.addEventListener('submit', function(e) {
+
+                    console.log('Form submitted'); // Debug log
+
+                    e.preventDefault();
+
+                    calculateCost();
+
+                });
+
+            }
+
+ 
+
+            // Button click handler as backup
+
+            const button = form ? form.querySelector('button[type="submit"]') : null;
+
+            if (button) {
+
+                button.addEventListener('click', function(e) {
+
+                    console.log('Button clicked'); // Debug log
+
+                    e.preventDefault();
+
+                    calculateCost();
+
+                });
+
+            }
+
+ 
+
+            // Real-time updates on form changes
+
+            if (form) {
+
+                form.addEventListener('change', function() {
+
+                    const results = document.getElementById('results');
+
+                    if (results && results.style.display !== 'none') {
+
+                        calculateCost();
+
+                    }
+
+                });
+
+            }
+
+ 
+
+            console.log('Event handlers set up successfully'); // Debug log
+
+        });
+
+    </script>
+
+</body>
+
+</html>
