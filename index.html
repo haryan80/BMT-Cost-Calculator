@@ -945,7 +945,18 @@
         }
 
     </style>
-
+<script type="text/javascript">
+  var appInsights=window.appInsights||function(config){
+    function r(config){t[config]=function(){var i=arguments;t.queue.push(function(){t[config].apply(t,i)})}}
+    var t={config:config},u=document,e=window,o="script",s=u.createElement(o),i,f;
+    for(s.src=config.url||"https://az416426.vo.msecnd.net/scripts/a/ai.0.js",u.getElementsByTagName(o)[0].parentNode.appendChild(s),
+    t.queue=[],i=["trackEvent","trackPageView","trackException","trackTrace","trackDependencyData","setAuthenticatedUserContext","clearAuthenticatedUserContext","flush"],f=0;f<i.length;f++)r(i[f]);
+    return t
+  }({
+    instrumentationKey:"8ce77581-2266-4e3e-bc36-f6c197828b98"
+  });
+  window.appInsights=appInsights;
+</script>
 </head>
 
 <body>
@@ -1423,6 +1434,17 @@
             // Store authentication state
             sessionStorage.setItem('isAuthenticated', 'true');
             sessionStorage.setItem('userAccount', JSON.stringify(account));
+
+            // Send user info to App Insights
+            appInsights.setAuthenticatedUserContext(account.username);  // user@domain.com
+            appInsights.trackEvent({
+                name: "UserLoggedIn",
+                properties: {
+                    user: account.username,
+                    time: new Date().toISOString()
+                }
+            });
+
         }
 
         function handleLogout() {
