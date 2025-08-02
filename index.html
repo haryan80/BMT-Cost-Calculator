@@ -1462,8 +1462,6 @@ async function login() {
 
         // (Optional) Track page view after login
         appInsights.trackPageView({ name: "Homepage (Authenticated)" });
-        appInsights.setAuthenticatedUserContext(userEmailOrUserId);
-
 
         // Continue login handling
         await handleLoginSuccess(response.account);
